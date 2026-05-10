@@ -16,10 +16,7 @@ MODIFIER_KEYS = (
 DEFAULT_KEYBOARD_LAYOUT = "en"
 KEY_LAYOUT_CHOICES = (
     ("en", "English (US)"),
-    ("de", "German"),
-    ("fr", "French (AZERTY)"),
     ("ru", "Russian"),
-    ("sv", "Swedish"),
 )
 
 COMMAND_MODIFIER_KEYS = (

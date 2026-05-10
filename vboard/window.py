@@ -90,7 +90,7 @@ class VirtualKeyboard(Gtk.Window):
 
         self.header = Gtk.HeaderBar()
         self.header.set_title(APP_DISPLAY_NAME)
-        self.header.set_show_close_button(True)
+        self.header.set_show_close_button(False)
         self.buttons = []
         self.key_buttons = {}
         self.modifier_buttons = {}
@@ -404,6 +404,28 @@ class VirtualKeyboard(Gtk.Window):
 
         self.save_settings()
 
+    def cycle_keyboard_layout(self, widget=None):
+        keys = [k for k, _ in KEY_LAYOUT_CHOICES]
+        idx = keys.index(self.keyboard_layout) if self.keyboard_layout in keys else 0
+        next_key = keys[(idx + 1) % len(keys)]
+        self.set_keyboard_layout(next_key)
+        self.lang_button.set_label(next_key.upper())
+        self.sync_system_layout(next_key)
+
+    def sync_system_layout(self, layout_key):
+        import subprocess
+        layout_map = {"en": "0", "ru": "1"}
+        index = layout_map.get(layout_key)
+        if index is None:
+            return
+        try:
+            subprocess.Popen([
+                "qdbus", "org.kde.keyboard", "/Layouts",
+                "org.kde.KeyboardLayouts.setLayout", index
+            ], env=dict(__import__("os").environ, DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus"))
+        except Exception:
+            pass
+
     def sync_gesture_menu_item(self):
         if self.tray_gesture_item is None:
             return
@@ -523,6 +545,11 @@ class VirtualKeyboard(Gtk.Window):
         self.esc_button.connect("clicked", lambda widget: self.emit_key("Esc"))
         self.esc_button.set_name("esc-button")
         self.header.pack_start(self.esc_button)
+
+        self.lang_button = Gtk.Button(label=self.keyboard_layout.upper())
+        self.lang_button.connect("clicked", self.cycle_keyboard_layout)
+        self.lang_button.set_name("esc-button")
+        self.header.pack_start(self.lang_button)
 
         self.create_button("☰", self.change_visibility, callbacks=1)
         self.create_button("+", self.change_opacity, True, 2)
