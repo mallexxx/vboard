@@ -90,7 +90,7 @@ class VirtualKeyboard(Gtk.Window):
 
         self.header = Gtk.HeaderBar()
         self.header.set_title(APP_DISPLAY_NAME)
-        self.header.set_show_close_button(False)
+        self.header.set_show_close_button(True)
         self.buttons = []
         self.key_buttons = {}
         self.modifier_buttons = {}
@@ -534,12 +534,21 @@ class VirtualKeyboard(Gtk.Window):
     def on_delete_event(self, widget, event):
         if self.exiting:
             return False
-        if self.tray_icon is None:
-            return False
-        self.save_settings()
-        self.hide()
-        self.update_tray_menu()
+        self.disable_system_virtual_keyboard()
         return True
+
+    def disable_system_virtual_keyboard(self):
+        import subprocess
+        try:
+            subprocess.Popen([
+                "qdbus", "org.kde.KWin", "/VirtualKeyboard",
+                "org.freedesktop.DBus.Properties.Set",
+                "org.kde.kwin.VirtualKeyboard", "enabled",
+                "false"
+            ], env=dict(__import__("os").environ,
+                        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus"))
+        except Exception:
+            pass
 
     def create_settings(self):
         self.esc_button = Gtk.Button(label="ESC")
