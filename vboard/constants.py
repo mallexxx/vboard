@@ -339,7 +339,7 @@ LIGHT_BACKGROUND_COLORS = {
 KEY_WIDTHS = {
     "Space": 12,
     "CapsLock": 3,
-    "Shift_R": 2,
+    "Shift_R": 4,
     "Shift_L": 2,
     "Backspace": 5,
     "`": 1,
