@@ -56,8 +56,19 @@ class HunspellSuggestionEngine:
         matches.sort(key=lambda word: (len(word), word))
         return matches[:limit]
 
+    def set_layout(self, layout_key):
+        """Switch dictionary when keyboard layout changes."""
+        layout_dict_map = {
+            "ru": ["ru_RU", "ru"],
+            "en": ["en_US", "en_GB", "en"],
+        }
+        self.layout_candidates = layout_dict_map.get(layout_key, [])
+        self.loaded = False
+        self.words = []
+        self.dictionary_path = None
+
     def find_dictionary_path(self):
-        candidates = self.get_dictionary_candidates()
+        candidates = getattr(self, "layout_candidates", None) or self.get_dictionary_candidates()
         search_dirs = [
             os.path.expanduser("~/.local/share/hunspell"),
             os.path.expanduser("~/.hunspell"),
@@ -147,14 +158,16 @@ class HunspellSuggestionEngine:
         return self.normalize_word("".join(word_chars))
 
     def normalize_word(self, word):
-        if not word or not word.isascii():
+        if not word:
             return None
 
         normalized = word.strip().lower()
         if len(normalized) < 2:
             return None
-        if any(char not in SUPPORTED_WORD_CHARS for char in normalized):
-            return None
         if not any(char.isalpha() for char in normalized):
             return None
+        # Allow Cyrillic and Latin words
+        if word.isascii():
+            if any(char not in SUPPORTED_WORD_CHARS for char in normalized):
+                return None
         return normalized

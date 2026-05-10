@@ -389,6 +389,7 @@ class VirtualKeyboard(Gtk.Window):
             return
 
         self.keyboard_layout = normalized_layout
+        self.suggestion_engine.set_layout(normalized_layout)
         self.refresh_layout_character_lookup()
         self.rebuild_keyboard_grid()
         if self.gesture_controller is not None:
